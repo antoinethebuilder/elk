@@ -1,0 +1,64 @@
+version: '3.5'
+
+secrets:
+  elk.passwords:
+    file: ./secrets/pass/passfile.txt
+
+services:
+  elastic_keystore:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    command: bash /setup/setup-keystore.sh
+    user: "0"
+    volumes:
+        - ./secrets/keystore:/secrets/keystore/
+        - ./secrets/pass/:/secrets/pass
+        - ./setup/:/setup/
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      # Add keystore values used in `keystore.sh` here. (e.g AMAZON S3 Repo Creds)
+      #AWS_ACCESS_KEY_ID:      ${AWS_ACCESS_KEY_ID}
+      #AWS_SECRET_ACCESS_KEY:  ${AWS_SECRET_ACCESS_KEY}
+
+  kibana_keystore:
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    command: bash /setup/setup-kibana-keystore.sh
+    user: "0"
+    volumes:
+        - ./secrets/keystore:/secrets/keystore/
+        - ./setup/:/setup/
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    secrets:
+      - source: elk.passwords
+        target: /tmp/passfile.txt
+  logstash_keystore:
+    build:
+      context: logstash/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    command: bash /setup/setup-logstash-keystore.sh
+    user: "0"
+    volumes:
+        - ./secrets/keystore:/secrets/keystore/
+        - ./setup/:/setup/
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    secrets:
+      - source: elk.passwords
+        target: /tmp/passfile.txt
+  certs:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    command: bash /setup/setup-certs.sh
+    user: "0"
+    volumes:
+      - ./secrets/:/secrets
+      - ./setup/:/setup/

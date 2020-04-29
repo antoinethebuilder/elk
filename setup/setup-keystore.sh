@@ -1,0 +1,32 @@
+# Exit on Error
+set -e
+
+OUTPUT_FILE=/secrets/keystore/elasticsearch/elasticsearch.keystore
+NATIVE_FILE=/usr/share/elasticsearch/config/elasticsearch.keystore
+
+set +o history
+export ELASTIC_PASSWORD=changeme
+set -o history
+
+# Create Keystore
+printf "========== Creating Elasticsearch Keystore ==========\n"
+printf "=====================================================\n"
+elasticsearch-keystore create >> /dev/null
+
+# Setting Secrets
+sh /setup/keystore.sh
+
+# Replace current Keystore
+if [ -f "$OUTPUT_FILE" ]; then
+    echo "Remove old elasticsearch.keystore"
+    rm $OUTPUT_FILE
+fi
+
+echo "Saving new elasticsearch.keystore"
+mv $NATIVE_FILE $OUTPUT_FILE
+chmod 0644 $OUTPUT_FILE
+
+printf "======= Keystore setup completed successfully =======\n"
+printf "=====================================================\n"
+printf "Remember to restart the stack, or reload secure settings if changed settings are hot-reloadable.\n"
+printf "=====================================================\n"
