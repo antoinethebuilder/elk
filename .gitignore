@@ -1,4 +1,4 @@
-!secrets/
 secrets/pass/*
 secrets/keystore/*
 secrets/certs/*
+!secrets/.gitkeep
