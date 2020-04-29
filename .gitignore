@@ -2,3 +2,6 @@ secrets/pass/*
 secrets/keystore/*
 secrets/certs/*
 !secrets/.gitkeep
+!secrets/certs/.gitkeep
+!secrets/keystore/.gitkeep
+!secrets/pass/.gitkeep
