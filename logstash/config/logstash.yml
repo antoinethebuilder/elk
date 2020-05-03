@@ -1,9 +1,8 @@
----
 http.host: "0.0.0.0"
-xpack.monitoring.elasticsearch.hosts: "https://${ELASTICSEARCH_HOST_PORT}"
+xpack.monitoring.elasticsearch.hosts: [ "https://${ELASTICSEARCH_HOST_PORT}" ]
 
 ## X-Pack security credentials
 xpack.monitoring.enabled: true
 xpack.monitoring.elasticsearch.username: logstash_system
 xpack.monitoring.elasticsearch.password: "${logstash_system_pwd}"
-xpack.monitoring.elasticsearch.ssl.certificate_authority: /usr/share/logstash/config/ca.crt
+xpack.monitoring.elasticsearch.ssl.certificate_authority: "/certs/ca.crt"

@@ -1,29 +1,44 @@
----
 ## Default Kibana configuration from Kibana base image.
 ## https://github.com/elastic/kibana/blob/master/src/dev/build/tasks/os_packages/docker_generator/templates/kibana_yml.template.js
 #
 server.name: kibana
 server.host: "0.0.0.0"
 
-# Elasticsearch Connection
-#elasticsearch.hosts: [ "http://${ELASTICSEARCH_HOST_PORT}" ]
-elasticsearch.hosts: ["https://${ELASTICSEARCH_HOST_PORT}" ]
+# Help prevent the browser from allowing unsafe scripting
+csp.strict: true
 
 # SSL settings
 server.ssl.enabled: true
-server.ssl.certificate: /certs/kibana.crt
-server.ssl.key: /certs/kibana.key
-server.ssl.certificateAuthorities: [ "/certs/ca.crt" ]
+server.ssl.certificate: /usr/share/kibana/data/certs/certs/kibana.crt
+server.ssl.key: /usr/share/kibana/data/certs/certs/kibana.key
+
+elasticsearch.hosts: [ "https://${ELASTICSEARCH_HOST_PORT}" ]
+elasticsearch.username: ${elasticsearch.username}
+elasticsearch.password: ${elasticsearch.password}
+elasticsearch.ssl.certificateAuthorities: [ "/usr/share/kibana/data/certs/certs/ca.crt" ]
+
+server.ssl.certificateAuthorities: [ "/usr/share/kibana/data/certs/certs/ca.crt" ]
 #xpack.security.encryptionKey: C1tHnfrlfxSPxPlQ8BlgPB5qMNRtg5V5
 #xpack.encryptedSavedObjects.encryptionKey: D12GTfrlfxSPxPlGRBlgPB5qM5GOPDV5
 #xpack.reporting.encryptionKey: RSCueeHKzrqzOVTJhkjt17EMnzM96LlN
 
-## X-Pack security credentials
-elasticsearch.username: elastic
-elasticsearch.password: ${elasticsearch.password}
-elasticsearch.ssl.certificateAuthorities: [ "/certs/ca.crt" ]
-#xpack.monitoring.elasticsearch.username: ${kibana.username}
-#xpack.monitoring.elasticsearch.password: ${kibana.password}
+## X-Pack
+xpack.security.session.idleTimeout: 10m
+
+# If not set, Kibana uses the value of the elasticsearch.username setting.
+xpack.monitoring.elasticsearch.username: ${elasticsearch.username}
+# If not set, Kibana uses the value of the elasticsearch.password setting.
+xpack.monitoring.elasticsearch.password: ${elasticsearch.password}
+
+
+# Set to true (default)
+#xpack.monitoring.enabled: true
+#xpack.monitoring.kibana.collection.enabled: true
+
+#xpack.monitoring.ui.enabled: true
+#xpack.monitoring.elasticsearch.hosts: [ "https://${ELASTICSEARCH_HOST_PORT}" ]
+#xpack.monitoring.elasticsearch.certificateAuthorities: /usr/share/kibana/data/certs/certs/ca.crt
+
 ## ElastAlert Plugin
 #elastalert-kibana-plugin.serverHost: elastalert
 #elastalert-kibana-plugin.serverPort: 3030

@@ -1,7 +1,11 @@
 # For per pipeline config, check docs: https://www.elastic.co/guide/en/logstash/current/logstash-settings-file.html
 
+#- pipeline.id: test
+  # path.config: "/usr/share/logstash/pipeline/test.conf"
+  # queue.type: memory
+
 - pipeline.id: main
-  path.config: "/usr/share/logstash/pipeline/main.conf"
+  path.config: "/usr/share/logstash/pipeline/main/*.conf"
   queue.type: memory
 
 #- pipeline.id: second_pipeline

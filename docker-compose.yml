@@ -13,18 +13,20 @@ volumes:
 secrets:
   elasticsearch.keystore:
     file: ./secrets/keystore/elasticsearch/elasticsearch.keystore
-  #logstash.pass:
-  #  file: ./secrets/keystore/logstash/logstash.txt
   logstash.keystore:
     file: ./secrets/keystore/logstash/logstash.keystore
   kibana.keystore:
     file: ./secrets/keystore/kibana/kibana.keystore
-  elastic.ca:
+  elasticsearch.cacert:
     file: ./secrets/certs/ca/ca.crt
   elasticsearch.certificate:
     file: ./secrets/certs/elasticsearch/elasticsearch.crt
   elasticsearch.key:
     file: ./secrets/certs/elasticsearch/elasticsearch.key
+  logstash.certificate:
+    file: ./secrets/certs/logstash/logstash.crt
+  logstash.key:
+    file: ./secrets/certs/logstash/logstash.key
   kibana.certificate:
     file: ./secrets/certs/kibana/kibana.crt
   kibana.key:
@@ -53,12 +55,12 @@ services:
     secrets:
       - source: elasticsearch.keystore
         target: /usr/share/elasticsearch/config/elasticsearch.keystore
-      - source: elastic.ca
-        target: /usr/share/elasticsearch/config/certs/ca.crt
+      - source: elasticsearch.cacert
+        target: /usr/share/elasticsearch/data/certs/ca.crt
       - source: elasticsearch.certificate
-        target: /usr/share/elasticsearch/config/certs/elasticsearch.crt
+        target: /usr/share/elasticsearch/data/certs/elasticsearch.crt
       - source: elasticsearch.key
-        target: /usr/share/elasticsearch/config/certs/elasticsearch.key
+        target: /usr/share/elasticsearch/data/certs/elasticsearch.key
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -79,6 +81,7 @@ services:
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
+      - ./logstash/templates/:/usr/share/logstash/templates:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     environment:
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
@@ -86,13 +89,18 @@ services:
       ELASTICSEARCH_HOST_PORT: "${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"
       LS_JAVA_OPTS: "-Xmx${LOGSTASH_HEAP} -Xms${LOGSTASH_HEAP}"
     secrets:
-      #- source: logstash.pass
-      #  target: /tmp/logstash.txt
       - source: logstash.keystore
         target: /usr/share/logstash/config/logstash.keystore
-      - source: elastic.ca
-        target: /usr/share/logstash/config/ca.crt
-    #command: bash -c "LOGSTASH_KEYSTORE_PASS=$$(cat /tmp/logstash.txt | grep -e LOGSTASH_KEYSTORE | cut -d '=' -f 2) && logstash"
+      - source: logstash.certificate
+        target: /certs/logstash.crt
+      - source: logstash.key
+        target: /certs/logstash.key
+      - source: elasticsearch.cacert
+        target: /certs/ca.crt
+    ports:
+      - "5514:5514"
+      - "9600:9600"
+      - "5044:5044"
   kibana:
     build:
       context: kibana/
@@ -100,7 +108,7 @@ services:
         ELK_VERSION: $ELK_VERSION
     restart: unless-stopped
     volumes:
-      - ./kibana/config/:/usr/share/kibana/config:ro
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
     environment:
       #ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       #ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
@@ -108,11 +116,11 @@ services:
     secrets:
       - source: kibana.keystore
         target: /usr/share/kibana/data/kibana.keystore
-      - source: elastic.ca
-        target: /certs/ca.crt
+      - source: elasticsearch.cacert
+        target: /usr/share/kibana/data/certs/certs/ca.crt
       - source: kibana.certificate
-        target: /certs/kibana.crt
+        target: /usr/share/kibana/data/certs/certs/kibana.crt
       - source: kibana.key
-        target: /certs/kibana.key
+        target: /usr/share/kibana/data/certs/certs/kibana.key
     ports:
       - "5601:5601"
