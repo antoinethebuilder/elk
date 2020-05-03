@@ -3,7 +3,7 @@ set -e
 
 # Setting Bootstrap Password
 echo "Setting bootstrap.password..."
-(echo "changeme" | elasticsearch-keystore add -x 'bootstrap.password')
+(echo "${ELASTIC_PASSWORD}" | elasticsearch-keystore add -x 'bootstrap.password')
 
 #(elasticsearch-setup-passwords auto -u "https://127.0.0.1:9200" -b | grep PASSWORD | grep -e kibana -e elastic| awk '{print $4}' > /secrets/passfile.txt)
 # ----- Setting Secrets

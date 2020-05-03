@@ -37,6 +37,7 @@ services:
     secrets:
       - source: elk.passwords
         target: /tmp/passfile.txt
+
   logstash_keystore:
     build:
       context: logstash/
@@ -52,6 +53,7 @@ services:
     secrets:
       - source: elk.passwords
         target: /tmp/passfile.txt
+
   certs:
     build:
       context: elasticsearch/

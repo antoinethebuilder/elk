@@ -4,8 +4,9 @@ set -e
 OUTPUT_FILE=/secrets/keystore/elasticsearch/elasticsearch.keystore
 NATIVE_FILE=/usr/share/elasticsearch/config/elasticsearch.keystore
 
+ELASTIC_PASSWORD="${ELASTIC_PASSWORD}"
 set +o history
-export ELASTIC_PASSWORD=changeme
+export ELASTIC_PASSWORD
 set -o history
 
 # Create Keystore
