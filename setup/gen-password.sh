@@ -14,15 +14,15 @@ while [[ "$(curl --cacert ${CACERT} -u "elastic:${ELASTIC_PASSWORD}" -s -o /dev/
     sleep 5
 done
 
-# Create 'logstash_writer' role
+echo "Creating 'logstash_writer' role..."
 curl -X POST --cacert ${CACERT} \
 	-u "elastic:${ELASTIC_PASSWORD}" -s -o /dev/null \
 	-H "Content-Type: application/json" \
 	-d @setup/role.json "${es_url}/_xpack/security/role/logstash_writer"
 
-# Create 'logstash_internal' user
+echo "Creating 'logstash_internal' user..."
 curl --cacert ${CACERT} -u \
-	"elastic:${ELASTIC_PASSWORD}" \
+	"elastic:${ELASTIC_PASSWORD}" -s -o /dev/null \
 	-X POST $es_url/_xpack/security/user/logstash_internal \
 	-H "Content-Type: application/json" \
 	--data-binary '{"password":"'"$LOGSTASH_WRITER_PASSWORD"'","roles":["logstash_writer"],"full_name":"Internal Logstash User"}'

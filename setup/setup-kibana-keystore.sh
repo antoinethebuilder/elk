@@ -14,8 +14,8 @@ kibana-keystore create --allow-root >> /dev/null
 
 # Setting Secrets
 
-(echo "kibana" | kibana-keystore add --allow-root -x 'elasticsearch.username')
-(echo "$KIBANA_PASSWORD" | kibana-keystore add --allow-root -x 'elasticsearch.password')
+(echo "kibana" | kibana-keystore add --allow-root -x 'elasticsearch.username' >> /dev/null)
+(echo "$KIBANA_PASSWORD" | kibana-keystore add --allow-root -x 'elasticsearch.password' >> /dev/null)
 
 # Replace current Keystore
 if [ -f "$OUTPUT_FILE" ]; then

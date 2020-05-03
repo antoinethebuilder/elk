@@ -15,12 +15,12 @@ printf "========== Creating Logstash Keystore ==========\n"
 printf "=====================================================\n"
 
 ###echo "LOGSTASH_KEYSTORE_PASS=$LOGSTASH_KEYSTORE_PASS" > /secrets/keystore/logstash/logstash.txt
-echo "y" | logstash-keystore create
+echo "y" | logstash-keystore create >> /dev/null
 # Setting Secrets
 
-echo "$ELASTIC_PASSWORD" | logstash-keystore add ES_PWD -x
-echo "$LOGSTASH_SYSTEM_PASSWORD" | logstash-keystore add LOGSTASH_SYSTEM_PWD -x
-echo "$LOGSTASH_WRITER_PASSWORD" | logstash-keystore add LOGSTASH_WRITER_PWD -x
+echo "$ELASTIC_PASSWORD" | logstash-keystore add ES_PWD -x >> /dev/null
+echo "$LOGSTASH_SYSTEM_PASSWORD" | logstash-keystore add LOGSTASH_SYSTEM_PWD -x >> /dev/null
+echo "$LOGSTASH_WRITER_PASSWORD" | logstash-keystore add LOGSTASH_WRITER_PWD -x >> /dev/null
 
 #logstash-keystore add 'ES_PWD'
 # Replace current Keystore

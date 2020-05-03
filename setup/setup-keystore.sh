@@ -29,5 +29,3 @@ chmod 0644 $OUTPUT_FILE
 
 printf "======= Keystore setup completed successfully =======\n"
 printf "=====================================================\n"
-printf "Remember to restart the stack, or reload secure settings if changed settings are hot-reloadable.\n"
-printf "=====================================================\n"

@@ -3,31 +3,31 @@
 # This for future release of Compose that will use Docker Buildkit, which is much efficient.
 COMPOSE_PREFIX_CMD := COMPOSE_DOCKER_CLI_BUILD=1
 
-COMPOSE_ALL_FILES := -f docker-compose.yml -f docker-compose.monitor.yml -f docker-compose.tools.yml -f docker-compose.nodes.yml
+COMPOSE_ALL_FILES := -f docker-compose.yml -f docker-compose.nodes.yml
 ELK_SERVICES   := elasticsearch logstash kibana
-ELK_MONITORING := elasticsearch-exporter logstash-exporter filebeat-cluster-logs
-ELK_TOOLS  := curator elastalert rubban
 ELK_NODES := elasticsearch-1 elasticsearch-2
-ELK_MAIN_SERVICES := ${ELK_SERVICES} ${ELK_MONITORING} ${ELK_TOOLS}
-ELK_ALL_SERVICES := ${ELK_MAIN_SERVICES} ${ELK_NODES}
+ELK_MAIN_SERVICES := ${ELK_SERVICES}
 # --------------------------
 
 .PHONY: setup keystore certs all elk monitoring tools build down stop restart rm logs
-
-keystore:		## Setup Elasticsearch Keystore, by initializing passwords, and add credentials defined in `keystore.sh`.
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm elastic_keystore
 	#@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
-
+keystore:
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm logstash_keystore
 certs:		    ## Generate Elasticsearch SSL Certs.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm certs
-setup:             ## Setup Elastisearch, Kibana with SSL
+run:             ## Run Kibana and Logstash with SSL
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d kibana
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d logstash
+setup:		## Setup Elasticsearch Keystore, by initializing passwords, and add credentials defined in `keystore.sh`.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm elastic_keystore
 	@make certs
-	${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d elasticsearch
-	./setup/gen-password.sh
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
-	${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d kibana
-	@echo "Please create the user 'logstash_internal' with the role 'logstash_writer'"
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d elasticsearch
+	@./setup/gen-password.sh
+all:		## Generate certificates, keystore for all services and start up all instances.
+	@make setup
+	@make keystore
+	@make run
 build:			## Build ELK and all its extra components.
 	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} build ${ELK_ALL_SERVICES}
 
