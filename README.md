@@ -1,3 +1,4 @@
+![Build](https://github.com/antoinethebuilder/elk/workflows/Test%20build/badge.svg?branch=develop)
 # ELK Stack
 ## Description
 This repository was made to be able to deploy a quick and secure Elasticsearch Stack.
