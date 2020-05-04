@@ -1,4 +1,3 @@
-![Build](https://github.com/antoinethebuilder/elk/workflows/Test%20build/badge.svg?branch=develop)
 # ELK Stack
 ## Description
 This repository was made to be able to deploy a quick and secure Elasticsearch Stack.
@@ -31,6 +30,22 @@ make all
 ```
 
 ## Notes
+### Elasticsearch Configuration Files
+- `elk/elasticsearch/config/elasticsearch.yml`
+- `elk/elasticsearch/config/log4j2.properties`
+
+### Logstash Configuration Files
+
+- Main Configuration
+  - `elk/logstash/config/logstash.yml`
+  - `elk/logstash/config/pipelines.yml`
+- Pipeline Configuration
+  - `elk/logstash/pipelines/*`
+- Index Templates
+  - `elk/logstash/templates/*`
+  
+### Kibana Configuration File
+- `elk/kibana/config/kibana.yml`
 
 ## Known Issues
 #### You have enabled encryption but DISABLED certificate verification
