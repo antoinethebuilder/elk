@@ -17,6 +17,7 @@ services:
         - ./secrets/pass/:/secrets/pass
         - ./setup/:/setup/
     environment:
+      STEP: "1"
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       # Add keystore values used in `keystore.sh` here. (e.g AMAZON S3 Repo Creds)
       #AWS_ACCESS_KEY_ID:      ${AWS_ACCESS_KEY_ID}
@@ -27,12 +28,13 @@ services:
       context: kibana/
       args:
         ELK_VERSION: ${ELK_VERSION}
-    command: bash /setup/setup-kibana-keystore.sh
+    command: bash /setup/setup-keystore.sh
     user: "0"
     volumes:
         - ./secrets/keystore:/secrets/keystore/
         - ./setup/:/setup/
     environment:
+      STEP: "2"
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     secrets:
       - source: elk.passwords
@@ -43,12 +45,13 @@ services:
       context: logstash/
       args:
         ELK_VERSION: ${ELK_VERSION}
-    command: bash /setup/setup-logstash-keystore.sh
+    command: bash /setup/setup-keystore.sh
     user: "0"
     volumes:
         - ./secrets/keystore:/secrets/keystore/
         - ./setup/:/setup/
     environment:
+      STEP: "3"
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     secrets:
       - source: elk.passwords
