@@ -85,7 +85,6 @@ services:
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     environment:
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      #ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ELASTICSEARCH_HOST_PORT: "${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"
       LS_JAVA_OPTS: "-Xmx${LOGSTASH_HEAP} -Xms${LOGSTASH_HEAP}"
     secrets:
@@ -110,8 +109,6 @@ services:
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
     environment:
-      #ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      #ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ELASTICSEARCH_HOST_PORT: ${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}
     secrets:
       - source: kibana.keystore
