@@ -16,38 +16,38 @@ keystore:
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm logstash_keystore
 certs:		    ## Generate Elasticsearch SSL Certs.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm certs
-run:             ## Run Kibana and Logstash with SSL
+run:            ## Run Kibana and Logstash with SSL
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d kibana
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d logstash
-setup:		## Setup Elasticsearch Keystore, by initializing passwords, and add credentials defined in `keystore.sh`.
+setup:			## Setup Elasticsearch Keystore, by initializing passwords, and add credentials defined in `keystore.sh`.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm elastic_keystore
 	@make certs
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d elasticsearch
 	@./setup/gen-password.sh
-all:		## Generate certificates, keystore for all services and start up all instances.
+all:			## Generate certificates, keystore for all services and start up all instances.
 	@make setup
 	@make keystore
 	@make run
 build:			## Build ELK and all its extra components.
-	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} build ${ELK_ALL_SERVICES}
+	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} build ${ELK_SERVICES}
 
 down:			## Down ELK and all its extra components.
 	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} down
 
 stop:			## Stop ELK and all its extra components.
-	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} stop ${ELK_ALL_SERVICES}
+	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} stop ${ELK_SERVICES}
 
 restart:		## Restart ELK and all its extra components.
-	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} restart ${ELK_ALL_SERVICES}
+	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} restart ${ELK_SERVICES}
 
 rm:				## Remove ELK and all its extra components containers.
-	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) rm -f ${ELK_ALL_SERVICES}
+	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) rm -f ${ELK_SERVICES}
 
 logs:			## Tail all logs with -n 1000.
-	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) logs --follow --tail=1000 ${ELK_ALL_SERVICES}
+	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) logs --follow --tail=1000 ${ELK_SERVICES}
 
 images:			## Show all Images of ELK and all its extra components.
-	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) images ${ELK_ALL_SERVICES}
+	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) images ${ELK_SERVICES}
 
 prune:			## Remove ELK Containers and Delete Volume Data
 	@make stop && make rm && docker volume prune -f
