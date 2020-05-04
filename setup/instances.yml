@@ -3,7 +3,6 @@ instances:
     dns:
       - elasticsearch
       - localhost
-      - dev.localdomain
     ip:
       - 127.0.0.1
 
@@ -11,7 +10,6 @@ instances:
     dns:
       - logstash
       - localhost
-      - dev.localdomain
     ip:
       - 127.0.0.1
 
@@ -19,6 +17,5 @@ instances:
     dns:
       - kibana
       - localhost
-      - dev.localdomain
     ip:
       - 127.0.0.1

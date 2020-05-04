@@ -3,8 +3,8 @@
 # This for future release of Compose that will use Docker Buildkit, which is much efficient.
 COMPOSE_PREFIX_CMD := COMPOSE_DOCKER_CLI_BUILD=1
 
-COMPOSE_ALL_FILES := -f docker-compose.yml -f docker-compose.nodes.yml
-ELK_SERVICES   := elasticsearch logstash kibana
+COMPOSE_ALL_FILES := -f docker-compose.yml 
+ELK_SERVICES := elasticsearch logstash kibana
 ELK_NODES := elasticsearch-1 elasticsearch-2
 ELK_MAIN_SERVICES := ${ELK_SERVICES}
 # --------------------------
@@ -17,12 +17,12 @@ keystore:
 certs:		    ## Generate Elasticsearch SSL Certs.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm certs
 run:            ## Run Kibana and Logstash with SSL
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d kibana
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d logstash
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build kibana
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build logstash
 setup:			## Setup Elasticsearch Keystore, by initializing passwords, and add credentials defined in `keystore.sh`.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm elastic_keystore
 	@make certs
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d elasticsearch
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build elasticsearch
 	@./setup/gen-password.sh
 all:			## Generate certificates, keystore for all services and start up all instances.
 	@make setup

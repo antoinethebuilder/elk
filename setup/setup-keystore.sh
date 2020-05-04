@@ -12,9 +12,10 @@ then
     export ELASTIC_PASSWORD
     set -o history
     # Create Keystore
-    printf "========== Creating Elasticsearch Keystore ==========\n"
-    printf "=====================================================\n"
-    elasticsearch-keystore create >> /dev/null
+    printf "===============================================\n"
+    printf "\e[33m Creating Elasticsearch Keystore \e[0m\n"
+    printf "===============================================\n"
+    elasticsearch-keystore create 2>&1
 
     # Setting Secrets
     echo "Setting bootstrap.password..."
@@ -29,14 +30,15 @@ then
     KIBANA_PASSWORD=$(cat /tmp/passfile.txt | grep "KIBANA" | cut -d '=' -f 2;)
 
     # Create Keystore
-    printf "========== Creating Kibana Keystore ==========\n"
-    printf "=====================================================\n"
-    kibana-keystore create --allow-root >> /dev/null
+    printf "===============================================\n"
+    printf "\e[33m Creating Kibana Keystore e[0m\n"
+    printf "===============================================\n"
+    kibana-keystore create --allow-root 2>&1
 
     # Setting Secrets
 
-    (echo "kibana" | kibana-keystore add --allow-root -x 'elasticsearch.username' >> /dev/null)
-    (echo "$KIBANA_PASSWORD" | kibana-keystore add --allow-root -x 'elasticsearch.password' >> /dev/null)
+    (echo "kibana" | kibana-keystore add --allow-root -x 'elasticsearch.username' 2>&1)
+    (echo "$KIBANA_PASSWORD" | kibana-keystore add --allow-root -x 'elasticsearch.password' 2>&1)
 elif [[ $STEP -eq "3" ]]
 then
 
@@ -51,18 +53,19 @@ then
     LOGSTASH_WRITER_PASSWORD=$(cat /tmp/passfile.txt | grep "LOGSTASH_WRITER" | cut -d '=' -f 2;)
 
     # Create Keystore
-    printf "========== Creating Logstash Keystore ==========\n"
-    printf "=====================================================\n"
+    printf "===============================================\n"
+    printf "\e[33m Creating Logstash Keystore e[0m\n"
+    printf "===============================================\n"
 
     ###echo "LOGSTASH_KEYSTORE_PASS=$LOGSTASH_KEYSTORE_PASS" > /secrets/keystore/logstash/logstash.txt
-    echo "y" | logstash-keystore create >> /dev/null
+    echo "y" | logstash-keystore create 2>&1
     # Setting Secrets
 
-    echo "$ELASTIC_PASSWORD" | logstash-keystore add ES_PWD -x >> /dev/null
-    echo "$LOGSTASH_SYSTEM_PASSWORD" | logstash-keystore add LOGSTASH_SYSTEM_PWD -x >> /dev/null
-    echo "$LOGSTASH_WRITER_PASSWORD" | logstash-keystore add LOGSTASH_WRITER_PWD -x >> /dev/null
+    echo "$ELASTIC_PASSWORD" | logstash-keystore add ES_PWD -x 2>&1
+    echo "$LOGSTASH_SYSTEM_PASSWORD" | logstash-keystore add LOGSTASH_SYSTEM_PWD -x 2>&1
+    echo "$LOGSTASH_WRITER_PASSWORD" | logstash-keystore add LOGSTASH_WRITER_PWD -x 2>&1
 else
-    echo "Something went wrong."
+    printf "\e[31mSomething went wrong.\e[0m\n"
     exit 1
 fi
 
@@ -76,5 +79,6 @@ echo "Saving new $SERVICE.keystore"
 mv $NATIVE_FILE $OUTPUT_FILE
 chmod 0644 $OUTPUT_FILE
 
-printf "======= Keystore setup completed successfully =======\n"
-printf "=====================================================\n"
+printf "===============================================\n"
+printf "\e[32mKeystore setup completed successfully.\e[0m \xE2\x9C\x94\n"
+printf "===============================================\n"
