@@ -13,7 +13,7 @@ then
     set -o history
     # Create Keystore
     printf "===============================================\n"
-    printf "\e[33m Creating Elasticsearch Keystore \e[0m\n"
+    printf " Creating Elasticsearch Keystore \n"
     printf "===============================================\n"
     elasticsearch-keystore create 2>&1
 
@@ -31,7 +31,7 @@ then
 
     # Create Keystore
     printf "===============================================\n"
-    printf "\e[33m Creating Kibana Keystore e[0m\n"
+    printf " Creating Kibana Keystore\n"
     printf "===============================================\n"
     kibana-keystore create --allow-root 2>&1
 
@@ -54,7 +54,7 @@ then
 
     # Create Keystore
     printf "===============================================\n"
-    printf "\e[33m Creating Logstash Keystore e[0m\n"
+    printf " Creating Logstash Keystore\n"
     printf "===============================================\n"
 
     ###echo "LOGSTASH_KEYSTORE_PASS=$LOGSTASH_KEYSTORE_PASS" > /secrets/keystore/logstash/logstash.txt
@@ -65,7 +65,7 @@ then
     echo "$LOGSTASH_SYSTEM_PASSWORD" | logstash-keystore add LOGSTASH_SYSTEM_PWD -x 2>&1
     echo "$LOGSTASH_WRITER_PASSWORD" | logstash-keystore add LOGSTASH_WRITER_PWD -x 2>&1
 else
-    printf "\e[31mSomething went wrong.\e[0m\n"
+    printf "Something went wrong.\n"
     exit 1
 fi
 
@@ -80,5 +80,5 @@ mv $NATIVE_FILE $OUTPUT_FILE
 chmod 0644 $OUTPUT_FILE
 
 printf "===============================================\n"
-printf "\e[32mKeystore setup completed successfully.\e[0m \xE2\x9C\x94\n"
+printf " Keystore setup completed successfully.\n"
 printf "===============================================\n"

@@ -18,7 +18,7 @@ echo "Creating 'logstash_writer' role..."
 curl -X POST --cacert ${CACERT} \
 	-u "elastic:${ELASTIC_PASSWORD}" -s -o /dev/null \
 	-H "Content-Type: application/json" \
-	-d @setup/role.json "${es_url}/_xpack/security/role/logstash_writer"
+	-d @setup/roles/role-logstash_writer.json "${es_url}/_xpack/security/role/logstash_writer"
 
 echo "Creating 'logstash_internal' user..."
 curl --cacert ${CACERT} -u \

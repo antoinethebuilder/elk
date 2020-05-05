@@ -1,0 +1,9 @@
+{
+  "cluster": ["monitor", "manage_ilm"],
+  "indices": [
+    {
+      "names": [ "winlogbeat-*" ],
+      "privileges": ["manage"]
+    }
+  ]
+}
