@@ -1,6 +1,7 @@
 # ELK Stack
 ## Description
 This repository was made to be able to deploy a quick and secure Elasticsearch Stack.
+It was heavily inspired by [elastdocker](https://github.com/sherifabdlnaby/elastdocker).
 
 ## PLEASE NOTE 
 
