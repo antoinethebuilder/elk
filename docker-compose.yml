@@ -97,7 +97,8 @@ services:
       - source: elasticsearch.cacert
         target: /certs/ca.crt
     ports:
-      - "5514:5514"
+      - "5514:5514/udp"
+      - "5514:5514/tcp"
       - "9600:9600"
       - "5044:5044"
   kibana:
