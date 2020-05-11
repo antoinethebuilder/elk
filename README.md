@@ -4,7 +4,7 @@ This repository was made to be able to deploy a quick and secure Elasticsearch S
 
 ## PLEASE NOTE 
 
-This project is a under development. Some things must be taken in considerations
+This project is under development. Some things must be taken in considerations
 to guarantee the environment to be fully secure.
 
 More information about this will be documented soon.
