@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 echo "Waiting Elasticsearch to be up..."
+user=$(who | cut -d ' ' -f 1 | head -n 1)
 passfile="secrets/pass/passfile.txt"
 ELASTIC_PASSWORD=changeme
 CACERT="secrets/certs/ca/ca.crt"
@@ -34,4 +35,4 @@ docker exec -it $(docker container ls -qf "name=elastic_elasticsearch") \
 	| awk '{print toupper($2)"_PASSWORD="$4}' >> $passfile
 
 echo "Setting file permission..."
-chown user:user $passfile
+chown $user:$user $passfile

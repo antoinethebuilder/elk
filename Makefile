@@ -2,14 +2,15 @@
 
 # This for future release of Compose that will use Docker Buildkit, which is much efficient.
 COMPOSE_PREFIX_CMD := COMPOSE_DOCKER_CLI_BUILD=1
+
 COMPOSE_ALL_FILES := -f docker-compose.yml 
 ELK_SERVICES := elasticsearch logstash kibana
 ELK_NODES := elasticsearch-1 elasticsearch-2
 ELK_MAIN_SERVICES := ${ELK_SERVICES}
 # --------------------------
 
-.PHONY: keystore certs run setup install build down stop restart rm logs images prune help
-
+.PHONY: setup keystore certs all elk monitoring tools build down stop restart rm logs
+	#@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
 keystore:
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm logstash_keystore
@@ -23,7 +24,7 @@ setup:			## Setup Elasticsearch Keystore, by initializing passwords, and add cre
 	@make certs
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build elasticsearch
 	@./setup/gen-password.sh
-install:		## Generate certificates, keystore for all services and start up all instances.
+all:			## Generate certificates, keystore for all services and start up all instances.
 	@make setup
 	@make keystore
 	@make run
