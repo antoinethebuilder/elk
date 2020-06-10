@@ -1,0 +1,26 @@
+input {
+    udp {
+        port => 5514
+        codec => plain { charset => "ASCII" }
+        add_field => {"[event][module]" => "fortigate"}
+    }
+
+}
+
+filter {
+
+    mutate {
+        rename => ["host", "[host][ip]" ]
+        add_field => {"[datafeed][type]" => "observer" }
+        add_tag => [ "syslog" ]
+    }
+    
+}
+
+output {
+    
+    pipeline {
+        send_to => "observer_enrichment"
+    }
+
+}
