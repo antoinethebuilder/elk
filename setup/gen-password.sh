@@ -28,6 +28,12 @@ curl --cacert ${CACERT} -u \
 	-H "Content-Type: application/json" \
 	--data-binary '{"password":"'"$LOGSTASH_WRITER_PASSWORD"'","roles":["logstash_writer"],"full_name":"Internal Logstash User"}'
 
+echo "Installing fortigate index template..."
+curl -X PUT --cacert ${CACERT} \
+	-u "elastic:${ELASTIC_PASSWORD}" -s -o /dev/null \
+	-H "Content-Type: application/json" \
+	-d @../logstash/templates/fortigate-6.2.2 "${es_url}/_template/fortigate"
+
 echo "Generating Elasticsearch Stack passwords..."
 docker exec -it $(docker container ls -qf "name=elastic_elasticsearch") \
 	elasticsearch-setup-passwords auto -u "https://127.0.0.1:9200" -b \
