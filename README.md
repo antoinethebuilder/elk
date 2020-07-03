@@ -2,8 +2,6 @@
 ## Description
 This repository was made to be able to deploy a quick and _secure_ Elasticsearch Stack.
 
-It is heavily inspired by [elastdocker](https://github.com/sherifabdlnaby/elastdocker).
-
 ## Notes
 
 This project is under development. 
@@ -58,10 +56,11 @@ It uses secrets for the certificates, the keystores and the passwords.
 
 No passwords are stored in plaintext or shown inside the containers.
 
+The keystore is only obfuscated at this since it is not password
+protected.
+
 To see the passwords, the current recommendation would to use `vi` or `nano`,
 write down the password to your favorite password manager and delete the file.
-
-There a many ways to build an ELK. I am aware all of this could be siemplified and not all these services would be necessary.
 
 ### Notes
 #### Elasticsearch Configuration Files
@@ -95,7 +94,19 @@ This is a known false positive, for more information view this [issue](https://g
 ** WARNING ** To make sure your data is secure change :ssl_certificate_verification to true
 ```
 
-## TODOS
-- [ ] Add pre-configured templates for logstash
-- [ ] Use a secret manager to store the credentials
+## Roadmap
+#### Deployment
+
 - [ ] Optimize the way we are building the stack
+
+#### Logstash Templates
+##### Add pre-configured templates for logstash
+
+- [x] Fortigate 6.X
+
+#### Secret Management
+
+##### Use a secret manager to store the credentials
+
+- [ ] Vault
+- [ ] AWS Secrets Manager

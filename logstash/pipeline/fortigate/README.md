@@ -1,10 +1,41 @@
-# Fortigate Pipelines
+Fortigate Syslog Configuration
+======================================
 
-## Details
+### UDP
 
-### Flow Representation
+Configuring syslog is widely used across companies. Perhaps, even if
+they may have other syslog servers already configured, this **does not**
+mean the firewall is configured properly.
 
-![pipeline flow](https://github.com/antoinethebuilder/elk/blob/devel/logstash/pipeline/fortigate/pipeline_flow.png)
+It is best to isolate this traffic from any other devices.
+
+UDP Syslog messages are limited to 64 KB. If the message is longer, data
+may be truncated.
+
+The following configuration is to be added using the console/ssh in the
+Fortigate appliance.
+
+You must change the following values in order for this to work:
+
+- LOGSTASH_IP → IP address of the Logstash server (most likely the agent's IP)
+- FGT_IP → Private IP address of the appliance.
+
+### CLI
+
+    config log syslogd setting
+        set status enable
+        set server "LOGSTASH_IP"
+        set mode udp
+        set port 5514
+        set facility local7
+        set source-ip "FGT_IP"
+        set format default
+        set priority default
+        set max-log-rate 10
+    end
+
+
+# Logstash Configuration
 
 ### 10-input_syslog
 
@@ -57,31 +88,22 @@ This is the final pipeline which will output with in the following index accordi
 
 If one of the variables is not found, logs will be sent to an index named `index_error-write`.
 
-### Tags
-To better assist if something goes wrong, pipelines will tag the events.
 
-|   Tag                             | Pipeline
-|---                                |--                     |
-| syslog                            | 10-input_syslog
-| guest_network                     | 70-drop
-| error_geo_file                    | 20-observer_enrichment
-| send_index_error                  | 20-observer_enrichment
-| dictionary_error                  | 40-fortigate_2_ecs
-| kv_syslog_grok_failure            | 30-kv_syslog
-| setting_default_timezone          | 30-kv_syslog
-| error_datafeed_enrichment         | 20-observer_enrichment
-| _dateparsefailure_kv_syslog       | 30-kv_syslog
-| _dateparsefailure_eventtime       | 40-fortigate_2_ecs
-| _source_geoip_lookup_failure      | 50-geo_enrichment
-| _destination_geoip_lookup_failure | 50-geo_enrichment
+Flow Representation
+-------------------
 
+![](assets/directory-structure.png)
 
-## Properties Definitions
-These properties should be inline, the representation below is to provide a better readability.
+Properties Definitions
+----------------------
+
+These properties should be inline, the representation below is to
+provide a better readability.
 
 **Please note**: Most of the fields are not mandatory and can be *skipped* using a commas: "`,`"
 
 ### Validations
+
 Due to the following condition under the pipeline `40-fortigate_2_ecs`: 
 
 `if [devid] != [observer][serial_number] or [observer][name] != [devname]`
@@ -125,7 +147,39 @@ These fields must not be skipped: [`serial_number`, `name`]
 "[observer][geo][rack_unit]"
 ```
 
-## Notes
+Tags
+----
+
+To better assist if something goes wrong, pipelines will tag the events.
+
+  **Tag**                              **Pipeline**
+|   Tag                             | Pipeline
+|---                                |--                     |
+| syslog                            | 10-input_syslog
+| guest_network                     | 70-drop
+| error_geo_file                    | 20-observer_enrichment
+| send_index_error                  | 20-observer_enrichment
+| dictionary_error                  | 40-fortigate_2_ecs
+| kv_syslog_grok_failure            | 30-kv_syslog
+| setting_default_timezone          | 30-kv_syslog
+| error_datafeed_enrichment         | 20-observer_enrichment
+| _dateparsefailure_kv_syslog       | 30-kv_syslog
+| _dateparsefailure_eventtime       | 40-fortigate_2_ecs
+| _source_geoip_lookup_failure      | 50-geo_enrichment
+| _destination_geoip_lookup_failure | 50-geo_enrichment
+
+Notes
+======================================
 
 ### Fortigates using HA
-You must add the information of the two hosts to the `host.yml` configuration file. Otherwise the tag `dictionary_error` will be applied.
+
+You must add the information of the two hosts to the host.yml
+configuration file. Otherwise the tag dictionary_error will be applied.
+
+Reference
+=========
+
+<http://docs.fortinet.com/document/fortigate/6.2.0/fortios-log-message-reference/682455/log-messages>
+<http://docs.fortinet.com/document/fortigate/6.2.0/fortios-log-message-reference/34314/log-id-numbers>
+<http://docs.fortinet.com/document/fortigate/6.2.0/fortios-log-message-reference/656858/log-id-definitions>
+<http://docs.fortinet.com/document/fortigate/6.2.0/fortios-log-message-reference/357866/log-message-fields>
