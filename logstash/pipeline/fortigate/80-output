@@ -1,0 +1,65 @@
+input {
+
+    pipeline {
+        address => "output"
+    }
+
+}
+
+filter {
+
+    #for index creation
+    mutate {
+        lowercase => [ "[organization][name]" ]
+        strip => [ "[organization][name]" ]
+    }
+
+}
+
+output {
+
+
+    if "send_index_error" in [tags] {
+        elasticsearch {
+            hosts => "https://${ELASTICSEARCH_HOST_PORT}"
+            password => "${logstash_writer_pwd}"
+            user => logstash_internal
+            ssl => true
+            cacert => "/certs/ca.crt"
+            ssl_certificate_verification => true
+            index => "idx_error-write"
+        }
+    } else if [event][module] in  [ "heartbeat" , "snmp" , "snmptrap" ]  {
+        elasticsearch {
+            hosts => "https://${ELASTICSEARCH_HOST_PORT}"
+            password => "${logstash_writer_pwd}"
+            user => logstash_internal
+            ssl => true
+            cacert => "/certs/ca.crt"
+            ssl_certificate_verification => true
+            index => "ecs-%{[event][module]}-write"
+        }
+    # This statement was causing trouble with v6.2.2
+    } else if [event][module] == "fortigate" and [organization][name] {
+        elasticsearch {
+            hosts => "https://${ELASTICSEARCH_HOST_PORT}"
+            password => "${logstash_writer_pwd}"
+            user => logstash_internal
+            ssl => true
+            cacert => "/certs/ca.crt"
+            ssl_certificate_verification => true
+            index => "ecs-%{[event][module]}-%{[organization][name]}-write"
+        }
+    } else {
+        elasticsearch {
+            hosts => "https://${ELASTICSEARCH_HOST_PORT}"
+            password => "${logstash_writer_pwd}"
+            user => logstash_internal
+            ssl => true
+            cacert => "/certs/ca.crt"
+            ssl_certificate_verification => true
+            index => "idx_error-write"
+        }
+    }
+
+}

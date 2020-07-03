@@ -98,9 +98,9 @@ services:
         target: /certs/ca.crt
     ports:
       - "5514:5514/udp"
-      - "5514:5514/tcp"
       - "9600:9600"
       - "5044:5044"
+    command: bin/logstash --config.reload.automatic
   kibana:
     build:
       context: kibana/

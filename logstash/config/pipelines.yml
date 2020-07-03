@@ -1,15 +1,33 @@
 # For per pipeline config, check docs: https://www.elastic.co/guide/en/logstash/current/logstash-settings-file.html
 
-#- pipeline.id: test
-  # path.config: "/usr/share/logstash/pipeline/test.conf"
-  # queue.type: memory
+- pipeline.id: firewalls
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/10-input_syslog"
 
-- pipeline.id: main
-  path.config: "/usr/share/logstash/pipeline/main/*.conf"
-  queue.type: memory
+- pipeline.id: observer_enrichment
+  queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/20-observer_enrichment"
 
-#- pipeline.id: second_pipeline
-#  path.config: "/usr/share/logstash/pipeline/second.conf"
-#  queue.type: persisted
-#  pipeline.batch.size: 125
-#  queue.page_capacity: 50mb
+- pipeline.id: kv_syslog
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/30-kv_syslog"
+
+- pipeline.id: fortigate_2_ecs
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/40-fortigate_2_ecs"
+
+- pipeline.id: geo_enrichment
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/50-geo_enrichment"
+
+- pipeline.id: logstash_enrichment
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/60-logstash_enrichment"
+
+- pipeline.id: drop
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/70-drop"
+
+- pipeline.id: output
+  #queue.type: persisted
+  path.config: "/usr/share/logstash/pipeline/fortigate/80-output"

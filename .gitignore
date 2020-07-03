@@ -1,8 +1,8 @@
 secrets/pass/*
 secrets/keystore/*
 secrets/certs/*
+archives/
 !secrets/.gitkeep
 !secrets/certs/.gitkeep
 !secrets/keystore/.gitkeep
-!secrets/keystore/*/.gitkeep
 !secrets/pass/.gitkeep

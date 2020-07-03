@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 echo "Waiting Elasticsearch to be up..."
+user=$(who | cut -d ' ' -f 1 | head -n 1)
 passfile="secrets/pass/passfile.txt"
 ELASTIC_PASSWORD=changeme
 CACERT="secrets/certs/ca/ca.crt"
@@ -27,6 +28,12 @@ curl --cacert ${CACERT} -u \
 	-H "Content-Type: application/json" \
 	--data-binary '{"password":"'"$LOGSTASH_WRITER_PASSWORD"'","roles":["logstash_writer"],"full_name":"Internal Logstash User"}'
 
+echo "Installing fortigate index template..."
+curl -X PUT --cacert ${CACERT} \
+        -u "elastic:${ELASTIC_PASSWORD}" -s -o /dev/null \
+        -H "Content-Type: application/json" \
+        -d @setup/templates/fortigate-6.2.2.json "${es_url}/_template/fortigate?pretty"
+
 echo "Generating Elasticsearch Stack passwords..."
 docker exec -it $(docker container ls -qf "name=elastic_elasticsearch") \
 	elasticsearch-setup-passwords auto -u "https://127.0.0.1:9200" -b \
@@ -34,4 +41,4 @@ docker exec -it $(docker container ls -qf "name=elastic_elasticsearch") \
 	| awk '{print toupper($2)"_PASSWORD="$4}' >> $passfile
 
 echo "Setting file permission..."
-chown user:user $passfile
+chown $user:$user $passfile

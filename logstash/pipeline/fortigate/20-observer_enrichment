@@ -1,0 +1,85 @@
+input {
+
+    pipeline {
+        address => "observer_enrichment"
+    }
+
+}
+
+filter {
+
+    if [host][ip] {
+        ############### OBSERVER #####################
+        translate {
+            field => "[host][ip]"
+            destination => "[datafeed_org_csv]"
+            dictionary_path => "/usr/share/logstash/pipeline/dictionaries/host_org.yml"
+            fallback => "default_datafeed_org_csv"
+        }
+        
+        if [datafeed_org_csv] == "default_datafeed_org_csv" {
+            mutate {
+                add_field => { "[tags]" => "error_datafeed_enrichment" }
+                add_field => { "[tags]" => "send_index_error" }
+            }
+
+        } else {
+            csv {
+                source => "datafeed_org_csv"
+                separator => ","
+                columns => ["[host][name]","[host][hostname]","[host][mac]","[host][product]","[host][serial_number]","[host][type]","[host][vendor]","[host][version]","[organization][id]","[organization][name]"]
+                skip_empty_columns => true
+            }
+        }
+        
+        
+
+        mutate{
+            remove_field => ["datafeed_org_csv"]
+        }
+        ################# G E O ###################
+        translate {
+            field => "[host][ip]"
+            destination => "[geo_csv]"
+            dictionary_path => "/usr/share/logstash/pipeline/dictionaries/geo.yml"
+            fallback => "default_geo"
+        }
+        
+        if [geo_csv] == "default_geo" {
+            mutate {
+                add_field => { "[tags]" => "error_geo_file" }
+            }
+        }else{
+            csv {
+            source => "geo_csv"
+            separator => ","
+            columns => ["[host][name]","[host][geo][city_name]","[host][geo][continent_name]","[host][geo][country_iso_code]","[host][geo][country_name]","[host][geo][location][lon]","[host][geo][location][lat]","[host][geo][name]","[host][geo][region_iso_code]","[host][geo][region_name]","[event][timezone]","[host][geo][site]","[host][geo][building]","[host][geo][floor]","[host][geo][room]","[host][geo][rack]","[host][geo][rack_unit]","[host][os][family]","[host][os][full]","[host][os][kernel]","[host][os][name]","[host][os][platform]","[host][os][version]","[host][product]","[network][alias]","[network][role]"]
+            skip_empty_columns => true
+            }
+        }
+        
+        mutate{
+            remove_field => ["geo_csv"]
+        }
+    }
+
+    if "syslog" in [tags] {
+        mutate {
+            rename => {"[host]" => "[observer]"}
+        }
+    }
+}
+
+output {
+    
+    if "error_datafeed_enrichment" in [tags] {
+        pipeline {
+            send_to => "drop" 
+        }
+    } else if "syslog" in [tags] {
+        pipeline {
+            send_to => "kv_syslog" 
+        }
+    }
+
+}
