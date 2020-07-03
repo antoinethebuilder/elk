@@ -62,7 +62,7 @@ filter {
         # Just for avoid errors in timestamp field
         if !([event][timezone]) {
             mutate { 
-                add_field => {"[event][timezone]" => "America/Lima" }
+                add_field => {"[event][timezone]" => "America/Toronto" }
                 add_field => {"[tags]" => "setting_default_timezone" }
             }
         }        

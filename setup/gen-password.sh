@@ -30,9 +30,9 @@ curl --cacert ${CACERT} -u \
 
 echo "Installing fortigate index template..."
 curl -X PUT --cacert ${CACERT} \
-	-u "elastic:${ELASTIC_PASSWORD}" -s -o /dev/null \
-	-H "Content-Type: application/json" \
-	-d @../logstash/templates/fortigate-6.2.2 "${es_url}/_template/fortigate"
+        -u "elastic:${ELASTIC_PASSWORD}" -s -o /dev/null \
+        -H "Content-Type: application/json" \
+        -d @setup/templates/fortigate-6.2.2.json "${es_url}/_template/fortigate?pretty"
 
 echo "Generating Elasticsearch Stack passwords..."
 docker exec -it $(docker container ls -qf "name=elastic_elasticsearch") \

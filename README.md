@@ -1,12 +1,13 @@
 # ELK Stack
 ## Description
-This repository was made to be able to deploy a quick and secure Elasticsearch Stack.
-It was heavily inspired by [elastdocker](https://github.com/sherifabdlnaby/elastdocker).
+This repository was made to be able to deploy a quick and _secure_ Elasticsearch Stack.
 
-## PLEASE NOTE 
+It is heavily inspired by [elastdocker](https://github.com/sherifabdlnaby/elastdocker).
 
-This project is under development. Some things must be taken in considerations
-to guarantee the environment to be fully secure.
+## Notes
+
+This project is under development. 
+Additional security measures must be applied.
 
 More information about this will be documented soon.
 
@@ -35,21 +36,24 @@ sudo make all
 
 For more options, type `make` or `make help`.
 
-### How it works
+### How the automatic deployment works
 
-1. Run temporary service called "_elastic_keystore_" to define the "_bootstrap.password_"
-2. Generate certificates from the instances defined in "_setup/instances.yml_"
-3. Build and run the elasticsearch service
-4. Run the script "_setup/gen-password.sh_"
+1. A temporary service called "_elastic_keystore_" runs to define the "`bootstrap.password`"
+2. Generate certificates from the instances defined in "`setup/instances.yml`"
+3. Build and run the elasticsearch container
+4. Run the script "`setup/gen-password.sh`" (to be renamed)
     - Create the logstash user and role
-    - Use "_elasticsearch-setup-passwords_" to generate password of built-in users
-    - Write the password to the file "_secrets/pass/passfile.txt_"
-5. Run temporary services called "_kibana_keystore_" and "_logstash_keystore_"
-    - Create the keystore and add the proper credentials to both services
+    - Create the index template "`fortigate`"
+    - Use `elasticsearch-setup-passwords` to generate passwords of the built-in users
+    - Write the password to the file "`secrets/pass/passfile.txt`"
+5. Run two temporary containers called "`kibana_keystore`" and "`logstash_keystore`"
+    - Create the keystore 
+    - Add credentials to both services
 6. Build and run the kibana and logstash instance
 
-The "_docker-compose.setup.yml_" file is used to generate certificates and create the keystores.
-The "_docker-compose.yml_" file is used to deploy the services.
+The "`docker-compose.setup.yml`" file is used to generate certificates and create the keystores.
+
+The "`docker-compose.yml`" file is used to deploy the services.
 It uses secrets for the certificates, the keystores and the passwords.
 
 No passwords are stored in plaintext or shown inside the containers.

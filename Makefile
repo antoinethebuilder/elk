@@ -5,53 +5,37 @@ COMPOSE_PREFIX_CMD := COMPOSE_DOCKER_CLI_BUILD=1
 
 COMPOSE_ALL_FILES := -f docker-compose.yml 
 ELK_SERVICES := elasticsearch logstash kibana
-ELK_NODES := elasticsearch-1 elasticsearch-2
 ELK_MAIN_SERVICES := ${ELK_SERVICES}
 # --------------------------
 
-.PHONY: setup keystore certs all elk monitoring tools build down stop restart rm logs
-	#@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
-keystore:
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm logstash_keystore
-certs:		    ## Generate Elasticsearch SSL Certs.
+.PHONY: setup populate certs all build stop restart rm logs
+certs:		    ## Generate SSL certificates for all instances.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm certs
-run:            ## Run Kibana and Logstash with SSL
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build kibana
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build logstash
-setup:			## Setup Elasticsearch Keystore, by initializing passwords, and add credentials defined in `keystore.sh`.
+setup:			## Setup Elasticsearch's keystore.
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm elastic_keystore
 	@make certs
 	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build elasticsearch
 	@./setup/gen-password.sh
-all:			## Generate certificates, keystore for all services and start up all instances.
-	@make setup
-	@make keystore
-	@make run
+populate:		## Populates the keystore of the Kibana and Logstash instance.
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm logstash_keystore
+run:            ## Run Kibana and Logstash with SSL.
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build kibana
+	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build logstash
 build:			## Build ELK and all its extra components.
 	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} build ${ELK_SERVICES}
-
-down:			## Down ELK and all its extra components.
-	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} down
-
-stop:			## Stop ELK and all its extra components.
+stack:			## Setup, populate, deploy ELK. [recommended]
+	@make setup
+	@make populate
+	@make run
+stop:			## Stop ELK.
 	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} stop ${ELK_SERVICES}
-
-restart:		## Restart ELK and all its extra components.
+restart:		## Restart ELK.
 	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} restart ${ELK_SERVICES}
-
-rm:				## Remove ELK and all its extra components containers.
+rm:				## Remove ELK. (Containers only)
 	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) rm -f ${ELK_SERVICES}
-
-logs:			## Tail all logs with -n 1000.
-	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) logs --follow --tail=1000 ${ELK_SERVICES}
-
-images:			## Show all Images of ELK and all its extra components.
-	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) images ${ELK_SERVICES}
-
-prune:			## Remove ELK Containers and Delete Volume Data
+purge:			## Deletes ALL stopped containers and ALL unused volumes.
 	@make stop && make rm && docker volume prune -f
-
 help:       	## Show this help.
-	@echo "Make Application Docker Images and Containers using Docker-Compose files in 'docker' Dir."
+	@echo "Deploy/Build an Elasticstack with SSL"
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m (default: help)\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
