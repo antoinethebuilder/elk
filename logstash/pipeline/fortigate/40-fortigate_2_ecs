@@ -8,7 +8,7 @@ input {
 filter {
 
 #remove event.original for saving disk space
-    #mutate{ remove_field => ["[event][original]"]  }
+    mutate{ remove_field => ["[event][original]"]  }
 
 #validea "N/A" on ip fields
     if [assigned]=="N/A" { mutate { remove_field => ["assigned"] } }

@@ -12,6 +12,7 @@ filter {
     mutate {
         lowercase => [ "[organization][name]" ]
         strip => [ "[organization][name]" ]
+        add_field => { "now" => "%{+YYYY.MM.dd}" }
     }
 
 }
@@ -37,7 +38,8 @@ output {
             ssl => true
             cacert => "/certs/ca.crt"
             ssl_certificate_verification => true
-            index => "ecs-%{[event][module]}-write"
+            ilm_policy => "ilm_fortigate"
+            index => "ecs-%{[event][module]}-%{now}"
         }
     # This statement was causing trouble with v6.2.2
     } else if [event][module] == "fortigate" and [organization][name] {
@@ -48,7 +50,9 @@ output {
             ssl => true
             cacert => "/certs/ca.crt"
             ssl_certificate_verification => true
-            index => "ecs-%{[event][module]}-%{[organization][name]}-write"
+            ilm_rollover_alias => "ecs-fortigate"
+            ilm_policy => "ilm_fortigate"
+            index => "ecs-%{[event][module]}-%{[organization][name]}-%{now}"
         }
     } else {
         elasticsearch {

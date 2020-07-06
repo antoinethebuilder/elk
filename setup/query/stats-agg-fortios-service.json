@@ -1,0 +1,27 @@
+{
+    "aggs": {
+        "2": {
+            "terms": {
+                "field": "fortios.service",
+                "order": {
+                    "_key": "asc"
+                },
+                "size": 15
+            }
+        }
+    },
+    "size": 0,
+    "stored_fields": [
+        "*"
+    ],
+    "script_fields": {},
+    "docvalue_fields": [
+        {
+            "field": "@timestamp",
+            "format": "date_time"
+        }
+    ],
+    "_source": {
+        "excludes": []
+    }
+}
