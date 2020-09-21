@@ -14,7 +14,7 @@ More information about this will be documented soon.
 - Production Single Node Cluster.
 - Self-Monitoring Metrics Enabled.
 - Security Enabled (under basic license).
-- SSL Enabled for Elasticsearch, Kibana and Logstash on both HTTP and transport layer.
+- SSL Enabled for Elasticsearch, Kibana and ~~Logstash~~ on both HTTP and transport layer.
 - Automatic certificates, keystores and passwords generation.
 
 ## Requirements
@@ -68,6 +68,8 @@ write down the password to your favorite password manager and delete the file.
 - `elk/elasticsearch/config/log4j2.properties`
 
 #### Logstash Configuration Files
+
+**THIS SECTION WILL EVENTUALLY BE REMOVED**
 
 - Main Configuration
   - `elk/logstash/config/logstash.yml`
