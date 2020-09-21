@@ -1,41 +1,121 @@
 .DEFAULT_GOAL:=help
 
 # This for future release of Compose that will use Docker Buildkit, which is much efficient.
-COMPOSE_PREFIX_CMD := COMPOSE_DOCKER_CLI_BUILD=1
+BUILDKIT := COMPOSE_DOCKER_CLI_BUILD=1 # Optional
+COMPOSE_ALL_FILES :=  docker-compose.yml
+COMPOSE_SETUP_FILE := docker-compose.setup.yml
+COMPOSE_BUILD_FILE := docker-compose.build.yml
+COMPOSE_PROJECT_NAME="$(cat .env | grep COMPOSE_PROJECT_NAME | cut -d '=' -f2)"
 
-COMPOSE_ALL_FILES := -f docker-compose.yml 
 ELK_SERVICES := elasticsearch logstash kibana
-ELK_MAIN_SERVICES := ${ELK_SERVICES}
 # --------------------------
 
-.PHONY: setup populate certs all build stop restart rm logs
-certs:		    ## Generate SSL certificates for all instances.
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm certs
-setup:			## Setup Elasticsearch's keystore.
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm elastic_keystore
-	@make certs
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build elasticsearch
-	@./setup/gen-password.sh
-populate:		## Populates the keystore of the Kibana and Logstash instance.
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm kibana_keystore
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.setup.yml run --rm logstash_keystore
-run:            ## Run Kibana and Logstash with SSL.
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build kibana
-	@${COMPOSE_PREFIX_CMD} docker-compose -f docker-compose.yml up -d --build logstash
-build:			## Build ELK and all its extra components.
-	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} build ${ELK_SERVICES}
-stack:			## Setup, populate, deploy ELK. [recommended]
-	@make setup
-	@make populate
-	@make run
-stop:			## Stop ELK.
-	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} stop ${ELK_SERVICES}
-restart:		## Restart ELK.
-	${COMPOSE_PREFIX_CMD} docker-compose ${COMPOSE_ALL_FILES} restart ${ELK_SERVICES}
-rm:				## Remove ELK. (Containers only)
-	@${COMPOSE_PREFIX_CMD} docker-compose $(COMPOSE_ALL_FILES) rm -f ${ELK_SERVICES}
-purge:			## Deletes ALL stopped containers and ALL unused volumes.
-	@make stop && make rm && docker volume prune -f
-help:       	## Show this help.
+.PHONY: deploy logs start stop restart down nuke help
+deploy:	build-all bootstrap kibana-keystore	start-kibana    			## Deploy everything from scratch [recommended]
+logs: 																	## Logs of the ELK
+	@docker-compose -f ${COMPOSE_ALL_FILES} logs -f elasticsearch kibana
+start: start-elasticsearch start-kibana         						## Start ELK
+
+stop:																	## Stop ELK
+	docker-compose -f ${COMPOSE_ALL_FILES} stop ${ELK_SERVICES}
+restart: stop start														## Restart ELK.
+
+down:																	## Remove ELK. (Containers only)
+	@docker-compose -f $(COMPOSE_ALL_FILES) down && ./setup/docker.sh delete_volumes
+nuke:																	## Deletes ALL stopped containers, unused volumes and unused networks
+	@docker container prune -f && docker network prune -f && docker container volumes prune -f
+help:       															## Show this help
 	@echo "Deploy/Build an Elasticstack with SSL"
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m (default: help)\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+# --------------------------
+
+# BOOTSTRAP
+.PHONY: bootstrap 
+bootstrap: gen-certificates 
+	@echo "+ $@"
+	@docker-compose -f docker-compose.yml up -d elasticsearch
+	@./setup/gen-password.sh
+
+# BUILDS
+.PHONY: build-all
+build-all: build-elastic build-kibana tag-images
+	@echo "Successfully built the following services:"
+	@docker images --filter=reference='${COMPOSE_PROJECT_NAME}*' --format "{{.ID}} {{.Repository}}"
+
+.PHONY: build-elastic
+build-elastic:
+	@echo "+ $@"
+	@docker-compose -f ${COMPOSE_BUILD_FILE} build -q elasticsearch
+
+.PHONY: build-kibana
+build-kibana:
+	@echo "+ $@"
+	@docker-compose -f ${COMPOSE_BUILD_FILE} build -q kibana
+
+.PHONY: build-logstash
+build-logstash:
+	@echo "+ $@"
+	@docker-compose -f ${COMPOSE_BUILD_FILE} build -q logstash
+
+# HTTPS/TLS + KEYSTORE
+.PHONY: elastic-keystore
+elastic-keystore:
+	@echo "+ $@"
+	@docker-compose -f ${COMPOSE_SETUP_FILE} run --rm elastic_keystore
+
+.PHONY: kibana-keystore
+kibana-keystore:
+	@echo "+ $@"
+	@docker-compose -f ${COMPOSE_SETUP_FILE} run --rm kibana_keystore
+
+.PHONY: gen-certificates
+gen-certificates:
+	@echo "+ $@"
+	@docker-compose -f ${COMPOSE_SETUP_FILE} run --rm certs
+
+# CONTAINER MANAGEMENT
+.PHONY: start-kibana
+start-kibana:
+	@docker-compose -f ${COMPOSE_ALL_FILES} up -d kibana
+
+.PHONY: stop-kibana
+stop-kibana:
+	@docker-compose -f ${COMPOSE_ALL_FILES} stop kibana
+
+.PHONY: logs-kibana
+logs-kibana:
+	@docker-compose -f ${COMPOSE_ALL_FILES} logs -f kibana
+
+.PHONY: start-elasticsearch
+start-elasticsearch:
+	@docker-compose -f ${COMPOSE_ALL_FILES} up -d elasticsearch
+
+.PHONY: stop-elasticsearch
+stop-elasticsearch:
+	@docker-compose -f ${COMPOSE_ALL_FILES} stop elasticsearch
+
+.PHONY: logs-elasticsearch
+logs-elasticsearch:
+	@docker-compose -f ${COMPOSE_ALL_FILES} logs -f elasticsearch
+.PHONY: start-logstash
+start-logstash:
+	@docker-compose -f ${COMPOSE_ALL_FILES} up -d logstash
+
+.PHONY: stop-logstash
+stop-logstash:
+	@docker-compose -f ${COMPOSE_ALL_FILES} stop logstash
+
+.PHONY: logs-logstash
+logs-logstash:
+	@docker-compose -f ${COMPOSE_ALL_FILES} logs -f logstash
+
+# IMAGE MANIPULATION
+.PHONY: tag-images
+tag-images:
+	@echo "+ $@"
+	@./setup/docker.sh tag_images
+
+.PHONY: delete-images
+delete-images:
+	@echo "- $@"
+	@./setup/docker.sh delete_images

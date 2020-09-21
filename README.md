@@ -29,7 +29,7 @@ To set this value permanently, update the vm.max_map_count setting in /etc/sysct
 ```
 git clone https://github.com/antoinethebuilder/elk/elk.git && \
 cd elk && \
-sudo make all
+sudo make deploy
 ```
 
 For more options, type `make` or `make help`.
@@ -85,6 +85,11 @@ write down the password to your favorite password manager and delete the file.
 Verify the file `secrets/pass/passfile.txt` exists and is not empty. 
 It is most likely a permission issue, you can adjust the permissions or use `sudo` to build the stack.
 
+#### Password file overwrites KIBANA_PASSWORD from KIBANA_SYSTEM_PASSWORD
+- [ ] Adjust the `setup/gen_password.sh` to grep "kibana_system" and "kibana_password" instead of "kibana"
+
+#### Volumes are not deleted when running `make down`
+- [x] Add `docker volume rm $(docker volume ls -f "name=${COMPOSE_PROJECT_NAME}_" -q)` to `setup/docker.sh`
 #### You have enabled encryption but DISABLED certificate verification
 This is a known false positive, for more information view this [issue](https://github.com/elastic/logstash/issues/10352).
 
@@ -97,7 +102,8 @@ This is a known false positive, for more information view this [issue](https://g
 ## Roadmap
 #### Deployment
 
-- [ ] Optimize the way we are building the stack
+- [x] Optimize the way we are building the stack
+- [x] Upgrade to 7.9.1
 
 #### Logstash Templates
 ##### Add pre-configured templates for logstash

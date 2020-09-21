@@ -5,26 +5,30 @@ secrets:
     file: ./secrets/pass/passfile.txt
 
 services:
-  elastic_keystore:
-    build:
-      context: elasticsearch/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
-    command: bash /setup/setup-keystore.sh
-    user: "0"
-    volumes:
-        - ./secrets/keystore:/secrets/keystore/
-        - ./secrets/pass/:/secrets/pass
-        - ./setup/:/setup/
-    environment:
-      STEP: "1"
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+  # We don't need this anymore since `bootstrap.password` is deprecated.
+  #
+  # elastic_keystore:
+  #   image: "${COMPOSE_PROJECT_NAME}_elasticsearch:${ELK_VERSION}"
+  #   # build:
+  #   #   context: elasticsearch/
+  #   #   args:
+  #   #     ELK_VERSION: ${ELK_VERSION}
+  #   command: bash /setup/setup-keystore.sh
+  #   user: "0"
+  #   volumes:
+  #       - ./secrets/keystore:/secrets/keystore/
+  #       - ./secrets/pass/:/secrets/pass
+  #       - ./setup/:/setup/
+  #   environment:
+  #     STEP: "1"
+  #     ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
 
   kibana_keystore:
-    build:
-      context: kibana/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
+    image: "${COMPOSE_PROJECT_NAME}_kibana:${ELK_VERSION}"
+    # build:
+    #   context: kibana/
+    #   args:
+    #     ELK_VERSION: ${ELK_VERSION}
     command: bash /setup/setup-keystore.sh
     user: "0"
     volumes:
@@ -37,28 +41,29 @@ services:
       - source: elk.passwords
         target: /tmp/passfile.txt
 
-  logstash_keystore:
-    build:
-      context: logstash/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
-    command: bash /setup/setup-keystore.sh
-    user: "0"
-    volumes:
-        - ./secrets/keystore:/secrets/keystore/
-        - ./setup/:/setup/
-    environment:
-      STEP: "3"
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
-    secrets:
-      - source: elk.passwords
-        target: /tmp/passfile.txt
+  # logstash_keystore:
+  #   build:
+  #     context: logstash/
+  #     args:
+  #       ELK_VERSION: ${ELK_VERSION}
+  #   command: bash /setup/setup-keystore.sh
+  #   user: "0"
+  #   volumes:
+  #       - ./secrets/keystore:/secrets/keystore/
+  #       - ./setup/:/setup/
+  #   environment:
+  #     STEP: "3"
+  #     ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+  #   secrets:
+  #     - source: elk.passwords
+  #       target: /tmp/passfile.txt
 
   certs:
-    build:
-      context: elasticsearch/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
+    image: "${COMPOSE_PROJECT_NAME}_elasticsearch:${ELK_VERSION}"
+    # build:
+    #   context: elasticsearch/
+    #   args:
+    #     ELK_VERSION: ${ELK_VERSION}
     command: bash /setup/setup-certs.sh
     user: "0"
     volumes:

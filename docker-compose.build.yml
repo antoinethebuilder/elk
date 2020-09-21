@@ -1,0 +1,19 @@
+version: '3.5'
+x-stack-ver:
+    &stack-version
+    args:
+        ELK_VERSION: "${ELK_VERSION}"
+
+services:
+    elasticsearch:
+        build:
+            context: elasticsearch/
+            <<: *stack-version
+    kibana:
+        build:
+            context: kibana/
+            <<: *stack-version
+    # logstash:
+    #     build:
+    #         context: kibana/
+    #         <<: *stack-version

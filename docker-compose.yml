@@ -3,7 +3,7 @@ version: '3.5'
 # To Join any other app setup using another network, change name and set external = true
 networks:
   default:
-    name: elastic
+    name: ${COMPOSE_PROJECT_NAME}_elastic
     external: false
 
 # will contain all elasticsearch data.
@@ -34,14 +34,20 @@ secrets:
 
 services:
   elasticsearch:
-    build:
-      context: elasticsearch/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
+    image: "${COMPOSE_PROJECT_NAME}_elasticsearch:${ELK_VERSION}"
+    # build:
+    #   context: elasticsearch/
+    #   args:
+    #     ELK_VERSION: ${ELK_VERSION}
     restart: unless-stopped
     environment:
-      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      # ----------------------------------------------------------------------------------------
+      # We are not using these variables anymore since the bootstrap.password is now deprecated.
+      # Elasticsearch generates its own bootstrap password from a randomized keystore.seed.
+
+      #ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      #ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      # ----------------------------------------------------------------------------------------
       ELASTIC_CLUSTER_NAME: ${ELASTIC_CLUSTER_NAME}
       ELASTIC_NODE_NAME: ${ELASTIC_NODE_NAME}
       ELASTIC_INIT_MASTER_NODE: ${ELASTIC_INIT_MASTER_NODE}
@@ -53,8 +59,8 @@ services:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./elasticsearch/config/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
     secrets:
-      - source: elasticsearch.keystore
-        target: /usr/share/elasticsearch/config/elasticsearch.keystore
+      # - source: elasticsearch.keystore
+      #   target: /usr/share/elasticsearch/config/elasticsearch.keystore
       - source: elasticsearch.cacert
         target: /usr/share/elasticsearch/data/certs/ca.crt
       - source: elasticsearch.certificate
@@ -72,40 +78,41 @@ services:
         soft: 200000
         hard: 200000
 
-  logstash:
-    build:
-      context: logstash/
-      args:
-        ELK_VERSION: $ELK_VERSION
-    restart: unless-stopped
-    volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
-      - ./logstash/templates/:/usr/share/logstash/templates:ro
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
-    environment:
-      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
-      ELASTICSEARCH_HOST_PORT: "${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"
-      LS_JAVA_OPTS: "-Xmx${LOGSTASH_HEAP} -Xms${LOGSTASH_HEAP}"
-    secrets:
-      - source: logstash.keystore
-        target: /usr/share/logstash/config/logstash.keystore
-      - source: logstash.certificate
-        target: /certs/logstash.crt
-      - source: logstash.key
-        target: /certs/logstash.key
-      - source: elasticsearch.cacert
-        target: /certs/ca.crt
-    ports:
-      - "5514:5514/udp"
-      - "9600:9600"
-      - "5044:5044"
-    command: bin/logstash --config.reload.automatic
+  # logstash:
+  #   build:
+  #     context: logstash/
+  #     args:
+  #       ELK_VERSION: $ELK_VERSION
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+  #     - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
+  #     - ./logstash/templates/:/usr/share/logstash/templates:ro
+  #     - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+  #   environment:
+  #     ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+  #     ELASTICSEARCH_HOST_PORT: "${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"
+  #     LS_JAVA_OPTS: "-Xmx${LOGSTASH_HEAP} -Xms${LOGSTASH_HEAP}"
+  #   secrets:
+  #     - source: logstash.keystore
+  #       target: /usr/share/logstash/config/logstash.keystore
+  #     - source: logstash.certificate
+  #       target: /certs/logstash.crt
+  #     - source: logstash.key
+  #       target: /certs/logstash.key
+  #     - source: elasticsearch.cacert
+  #       target: /certs/ca.crt
+  #   ports:
+  #     - "5514:5514/udp"
+  #     - "9600:9600"
+  #     - "5044:5044"
+  #   command: bin/logstash --config.reload.automatic
   kibana:
-    build:
-      context: kibana/
-      args:
-        ELK_VERSION: $ELK_VERSION
+    image: "${COMPOSE_PROJECT_NAME}_kibana:${ELK_VERSION}"
+    # build:
+    #   context: kibana/
+    #   args:
+    #     ELK_VERSION: $ELK_VERSION
     restart: unless-stopped
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
@@ -113,7 +120,7 @@ services:
       ELASTICSEARCH_HOST_PORT: ${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}
     secrets:
       - source: kibana.keystore
-        target: /usr/share/kibana/data/kibana.keystore
+        target: /usr/share/kibana/config/kibana.keystore
       - source: elasticsearch.cacert
         target: /usr/share/kibana/data/certs/certs/ca.crt
       - source: kibana.certificate
