@@ -27,7 +27,7 @@ To set this value permanently, update the vm.max_map_count setting in /etc/sysct
 
 ## Usage:    
 ```
-git clone https://github.com/antoinethebuilder/elk/elk.git && \
+git clone https://github.com/antoinethebuilder/elk.git && \
 cd elk && \
 sudo make deploy
 ```
